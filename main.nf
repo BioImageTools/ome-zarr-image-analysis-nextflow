@@ -56,9 +56,6 @@ process MORPHOMETRY {
     """
 }
 
-params.input_image = "data/xy_8bit__nuclei_PLK1_control.ome.zarr"
-params.sigma = "1,1,1,2.5,2.5"
-params.dataset = ''
 
 workflow {
 
