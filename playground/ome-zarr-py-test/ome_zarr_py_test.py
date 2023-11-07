@@ -7,7 +7,6 @@ from ome_zarr.reader import Reader
 url = "data/xy_8bit__nuclei_PLK1_control.ome.zarr"
 
 # read the image data
-store = parse_url(url, mode="r").store
 reader = Reader(parse_url(url))
 # nodes may include images, labels etc
 nodes = list(reader())
