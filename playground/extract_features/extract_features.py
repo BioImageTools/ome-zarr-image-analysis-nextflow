@@ -23,7 +23,7 @@ def extract_features(inpath,
     # Get the numpy array and perform threshold
     properties = regionprops(label_image[0, 0, 0, ...])
     areas = [{"label-value": i, "area (pixels)": int(property.area)} for i, property in enumerate(properties)]
-    label_root.attrs["image-label"]["properties"] = areas
+    label_root.attrs["image-label"] = {"properties": areas}
     # Save the output
     #writer.write(pyramid=inputs, group=inputs)
     return None
