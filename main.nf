@@ -17,7 +17,7 @@ process BLUR {
         $args # channel, timepoint, resolution 
         -i $omezarr_root/$dataset
         -sigma $sigma
-        -o 
+        -o $omezarr_out
     """
 
 }
