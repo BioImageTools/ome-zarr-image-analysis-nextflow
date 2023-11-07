@@ -1,1 +1,5 @@
 .idea/
+output/
+work/
+.nextflow/
+.nextflow.log*
