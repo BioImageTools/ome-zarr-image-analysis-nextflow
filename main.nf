@@ -1,4 +1,8 @@
 
+params.input_image = "data/xy_8bit__nuclei_PLK1_control.ome.zarr"
+params.sigma = "1,1,1,2.5,2.5"
+params.dataset = ''
+
 process BLUR {
     debug true
 	conda "conda-forge::scikit-image=0.22.0 conda-forge::ome-zarr=0.8.0"
@@ -18,7 +22,6 @@ process BLUR {
     def args = task.ext.args ?: ''
     def dataset = dataset ?: ''
     """
-    echo $omezarr_root
     blur.py \
         -i $omezarr_root$dataset \
         -s $sigma \
