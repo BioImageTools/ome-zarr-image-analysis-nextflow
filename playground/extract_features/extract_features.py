@@ -26,8 +26,7 @@ def extract_features(inpath,
     label_root.attrs["image-label"] = {"properties": areas}
     # Save the output
     #writer.write(pyramid=inputs, group=inputs)
-    return None
 
 
 if __name__ == '__main__':
-    extract_features("data/xy_8bit__nuclei_PLK1_control.ome.zarr", label="thresholded")
+    extract_features("data/xy_8bit__nuclei_PLK1_control.ome.zarr", label="otsu")

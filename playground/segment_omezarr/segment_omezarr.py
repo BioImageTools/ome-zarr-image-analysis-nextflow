@@ -25,12 +25,13 @@ def segment(inpath,
         # Write labels as a separate OME-Zarr hierarchy
         assert outpath is not None, "If export_labels is True, outpath must be specified as a directory path."
         group = zarr.open_group(outpath, mode='a')
-        _ = writer.write_image(image=mask, group=group)
+        _ = writer.write_image(image=mask, group=group,
+                               storage_options={'dimension_separator': '/'})
     else:
         # Write labels to the labels subdirectory of the input OME-Zarr hierarchy
         group = zarr.open_group(inpath, mode='a')
-        _ = writer.write_labels(labels=mask, group=group, name='thresholded')
-    return None
+        _ = writer.write_labels(labels=mask, group=group, name='otsu',
+                                storage_options={'dimension_separator': '/'})
 
 
 if __name__ == '__main__':
