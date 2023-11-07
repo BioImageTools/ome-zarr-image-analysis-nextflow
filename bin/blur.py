@@ -21,14 +21,15 @@ def main(args):
     sigmas = [float(s) for s in args.sigma.split(",")]
 
     dask_img = image_node.data
+    chosen_channel = dask_img[args.resolution]
     blurred_img = gaussian(
-        dask_img[args.resolution],
+        chosen_channel,
         sigma=sigmas
     )
 
     gr = zarr.open_group(args.output, mode = 'w')
     channel_index = [i for i, axis in enumerate(image_node.metadata['axes']) if axis['name'] == 'c'][0]
-    combined = np.concatenate((dask_img[0], blurred_img), axis = channel_index)
+    combined = np.concatenate((chosen_channel, blurred_img), axis = channel_index)
     _ = writer.write_image(
         combined, group = gr,
         axes=image_node.metadata['axes'],
