@@ -21,13 +21,19 @@ def main(args):
     sigmas = [float(s) for s in args.sigma.split(",")]
 
     dask_img = image_node.data
-    blurred_img = gaussian(dask_img[0], sigma=sigmas)
+    blurred_img = gaussian(
+        dask_img[args.resolution],
+        sigma=sigmas
+    )
 
     gr = zarr.open_group(args.output, mode = 'w')
     channel_index = [i for i, axis in enumerate(image_node.metadata['axes']) if axis['name'] == 'c'][0]
     combined = np.concatenate((dask_img[0], blurred_img), axis = channel_index)
-    _ = writer.write_image(combined, group = gr,
-                           axes=image_node.metadata['axes'])
+    _ = writer.write_image(
+        combined, group = gr,
+        axes=image_node.metadata['axes'],
+        storage_options={'dimension_separator': '/'}
+    )
 
 
 if __name__ == "__main__":
@@ -40,11 +46,11 @@ if __name__ == "__main__":
                         help='Path to the OME-Zarr data set where the output image will be written')
     parser.add_argument('-s', '--sigma', type=str, required=True, \
         help='Sigma for blur kernel, comma delimited')
-    parser.add_argument('-c', '--channel', type=int, default="0", 
+    parser.add_argument('-c', '--channel', type=int, default=0, 
                         help='Channel index')
-    parser.add_argument('-t', '--timepoint', type=int, default="0", 
+    parser.add_argument('-t', '--timepoint', type=int, default=0, 
                         help='Timepoint index')
-    parser.add_argument('-r', '--resolution', type=int, default="0", 
+    parser.add_argument('-r', '--resolution', type=int, default=0, 
                         help='Resolution index')
     args = parser.parse_args()
 
