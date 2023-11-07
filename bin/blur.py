@@ -26,8 +26,11 @@ def main(args):
     gr = zarr.open_group(args.output, mode = 'w')
     channel_index = [i for i, axis in enumerate(image_node.metadata['axes']) if axis['name'] == 'c'][0]
     combined = np.concatenate((dask_img[0], blurred_img), axis = channel_index)
-    _ = writer.write_image(combined, group = gr,
-                           axes=image_node.metadata['axes'])
+    _ = writer.write_image(
+        combined, group = gr,
+        axes=image_node.metadata['axes'],
+        storage_options={'dimension_separator': '/'}
+    )
 
 
 if __name__ == "__main__":
