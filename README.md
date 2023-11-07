@@ -2,7 +2,7 @@
 
 Simple example created by a group at the "Next generation bioimage analysis workflows hackathon".
 
-Aims:
+## Aims
 
 * Explore what nf-core gives us for specifying inputs and outputs
 * Explore storing versioning file as in nf-core
@@ -21,3 +21,29 @@ Aims:
 * Bonus
   * Process only a part of an image
   * Use a Fractal task as one of the Nextflow processes
+ 
+## Observations
+
+ * Important tools and libraries require arrays of specific input dimensionality to operate on, thus we need convenient APIs and implementations that allow us to subset OME-Zarr.
+   * Very few (none?) of the current tools natively work on multi-resolution input, thus be able to specify which resolution level to work on is important and not well supported by the python libraries that we found.
+
+## Analysis tools landscape in terms of input dimensionalities
+
+### 2D RGB  
+
+- YOLO
+- SAM
+
+### 2D or 3D RGB  
+
+- Cellpose
+  - Is it really RGB?  
+
+### 2D or 3D multi-channel
+
+- elastix
+
+### ND
+
+- skimage ?!
+- ImgLib2 ?!
