@@ -1,3 +1,5 @@
+# https://ome-zarr.readthedocs.io/en/stable/python.html#reading-ome-ngff-images
+
 from ome_zarr.io import parse_url
 from ome_zarr.reader import Reader
 
@@ -13,3 +15,4 @@ nodes = list(reader())
 image_node = nodes[0]
 metadata = image_node.metadata
 dask_data = image_node.data
+dask_data
