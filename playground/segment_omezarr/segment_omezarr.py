@@ -4,11 +4,11 @@ import zarr
 from ome_zarr import writer
 import numpy as np
 
-def apply_threshold(inpath,
-                    resolution = '0',
-                    export_labels = False,
-                    outpath = None
-                    ):
+def segment(inpath,
+            resolution = '0',
+            export_labels = False,
+            outpath = None
+            ):
     ### Apply otsu threshold to OME-Zarr and write output to a separate OME-Zarr directory.
     # Read OME-Zarr and specify a resolution layer.
     inputs = zarr.open_group(inpath)
