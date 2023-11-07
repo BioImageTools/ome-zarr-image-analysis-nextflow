@@ -1,14 +1,16 @@
 
 process BLUR {
-	conda "scikit-image==0.22.0 ome-zarr==0.8.2"
+	conda "scikit-image==0.22.0 ome-zarr==0.8.0"
 	
     input:
     tuple val(meta), path(omezarr_root), val(dataset)
-    val(sigma) //for blurring, e.g. "2.5, 2.5"
+    val(sigma) //for blurring, e.g. "2.5,2.5" or "3,3,5"
 
     output:
+    tuple val(meta), path(omezarr_out)
 
     script:
+    omezarr_out = file(omezarr_root).baseName + "_blurred.ome.zarr"
     def args = task.ext.args ?: ''
     """
     blur.py \
@@ -21,7 +23,7 @@ process BLUR {
 }
 
 process SEGMENT {
-	conda "scikit-image==0.22.0 ome-zarr==0.8.2"
+	conda "scikit-image==0.22.0 ome-zarr==0.8.0"
 
     tuple val(meta), path()
 
@@ -30,7 +32,7 @@ process SEGMENT {
 
 
 process MORPHOMETRY {
-	conda "scikit-image==0.22.0 ome-zarr==0.8.2"
+	conda "scikit-image==0.22.0 ome-zarr==0.8.0"
 
     tuple val(meta), path()
 
