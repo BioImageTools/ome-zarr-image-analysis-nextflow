@@ -2,4 +2,4 @@
 
 ## ome-zarr-py
 
-- API to read a 2D or 3D volume from an OME-Zarr dataset, e.g.
+- More concise way to find axes indices, currently: `channel_index = [i for i, axis in enumerate(image_node.metadata['axes']) if axis['name'] == 'c'][0]` 
