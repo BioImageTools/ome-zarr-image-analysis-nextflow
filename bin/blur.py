@@ -6,28 +6,28 @@ from ome_zarr.reader import Reader
 from ome_zarr import writer
 from skimage.filters import gaussian
 import zarr
+import numpy as np
 
-#url = "https://uk1s3.embassy.ebi.ac.uk/idr/zarr/v0.4/idr0062A/6001240.zarr"
-url = "../data/xy_8bit__nuclei_PLK1_control.ome.zarr"
 
 def main(args):
     # read the image data
-    reader = Reader(parse_url(args.input, mode="r").store)
+    reader = Reader(parse_url(args.input, mode="r"))
     # nodes may include images, labels etc
     nodes = list(reader())
 
     # first node will be the image pixel data
     image_node = nodes[0]
 
-    # channel_index = [i for i, axis in enumerate(metadata['axes']) if axis['name'] == 'c'][0]
-
-    sigma = args.sigma.split(",")
+    sigmas = [float(s) for s in args.sigma.split(",")]
 
     dask_img = image_node.data
-    blurred_img = gaussian(dask_img, sigma=sigma)
+    blurred_img = gaussian(dask_img[0], sigma=sigmas)
 
     gr = zarr.open_group(args.output, mode = 'w')
-    _ = writer.write_image(da.array([dask_img, blurred_img]), group = gr)
+    channel_index = [i for i, axis in enumerate(image_node.metadata['axes']) if axis['name'] == 'c'][0]
+    combined = np.concatenate((dask_img[0], blurred_img), axis = channel_index)
+    _ = writer.write_image(combined, group = gr,
+                           axes=image_node.metadata['axes'])
 
 
 if __name__ == "__main__":
