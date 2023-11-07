@@ -19,16 +19,15 @@ def main(args):
     # first node will be the image pixel data
     image_node = nodes[0]
 
-    channel_index = [i for i, axis in enumerate(metadata['axes']) if axis['name'] == 'c'][0]
+    # channel_index = [i for i, axis in enumerate(metadata['axes']) if axis['name'] == 'c'][0]
 
     sigma = args.sigma.split(",")
 
     dask_img = image_node.data
     blurred_img = gaussian(dask_img, sigma=sigma)
-    two_ch_img = da.array([blurred_img, blurred_img])
-    gr = zarr.open_group(args.output, mode = 'w')
-    _ = writer.write_multiscale(pyramid = layers, group = gr)
 
+    gr = zarr.open_group(args.output, mode = 'w')
+    _ = writer.write_image(da.array([dask_img, blurred_img]), group = gr)
 
 
 if __name__ == "__main__":
