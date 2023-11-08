@@ -7,6 +7,7 @@ from ome_zarr import writer
 from skimage.filters import gaussian
 import zarr
 import numpy as np
+import os
 
 
 def main(args):
@@ -27,7 +28,7 @@ def main(args):
         sigma=sigmas
     )
 
-    gr = zarr.open_group(args.output, mode = 'w')
+    gr = zarr.open_group(os.sep.join([args.input, args.output]), mode = 'w')
     channel_index = [i for i, axis in enumerate(image_node.metadata['axes']) if axis['name'] == 'c'][0]
     combined = np.concatenate((chosen_channel, blurred_img), axis = channel_index)
     _ = writer.write_image(
