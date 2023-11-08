@@ -29,7 +29,9 @@ def main(args):
         sigma=sigmas
     )
 
-    gr = zarr.open_group(os.sep.join([args.output, args.processing_method]), mode = 'a')
+    # has to be append mode, otherwise: OSError: Cannot call rmtree on a symbolic link
+    gr = zarr.open_group(args.output, mode = 'a')
+
     channel_index = [i for i, axis in enumerate(image_node.metadata['axes']) if axis['name'] == 'c'][0]
     combined = np.concatenate((layer, blurred_img), axis = channel_index)
 
