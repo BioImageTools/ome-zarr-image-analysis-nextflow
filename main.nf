@@ -18,7 +18,7 @@ process BLUR {
 
     output:
     tuple val(meta), path(omezarr_root), val(dataset), emit: blurred
-    path("blurring_versions.yml"), emit: versions
+    // path("blurring_versions.yml"), emit: versions
 
     script:
     omezarr_out = meta['id'] + "_blurred.ome.zarr"
@@ -33,9 +33,10 @@ process BLUR {
         -o $processing_method \
         $args # channel, timepoint, resolution 
 
-    cat <<-END_VERSIONS > ${verion_file_name}
-    "${task.process}":
+    cat <<-END_VERSIONS > ${omezarr_root}/${verion_file_name}
+    "${task.process} ":
         blurring: \$(echo \$(blur.py --version 2>&1) | sed 's/^.*blur.py //; s/Using.*\$//' ))
+    
     END_VERSIONS
     """
 }
@@ -66,10 +67,10 @@ process SEGMENT {
         --segmentation_name $segmentation_name \
         $args #
 
-    #cat <<-END_VERSIONS > ${verion_file_name}
-    #"${task.process}":
-    #    segment: \$(echo \$(segment.py version 2>&1) | sed 's/^.*segment.py //; s/Using.*\$//' ))
-    #END_VERSIONS
+    cat <<-END_VERSIONS > ${omezarr_root}/${verion_file_name}
+    "${task.process}":
+        segment: \$(echo \$(segment.py version 2>&1) | sed 's/^.*segment.py //; s/Using.*\$//' ))
+    END_VERSIONS
     """
 }
 
@@ -90,28 +91,37 @@ process MORPHOMETRY {
     script:
     def processing_method = meta.processing_method
     def segmentation_name = meta.segmentation_name
+    def verion_file_name = "feature_extraction_versions.yml"
     """
-    extract_features.py \
+    extract_features.py run \
         $omezarr_root$dataset \
         $processing_method \
         --segmentation_method $segmentation_name \
+
+    cat <<-END_VERSIONS > ${omezarr_root}/${verion_file_name}
+    "${task.process}":
+        features: \$(echo \$(extract_features.py version 2>&1) | sed 's/^.*extract_features.py //; s/Using.*\$//' ))
+    END_VERSIONS
     """
 }
 
 
 workflow {
 
-    ch_versions = Channel.empty()
+    // ch_versions = Channel.empty()
     meta = [:]
     meta.id = "demo"
     meta.processing_method = "gaussian_blur"
     meta.segmentation_name = "otsu1"
 
 	BLUR(
-        channel.from([[meta, file(params.input_image, checkIfExist:true), params.dataset]]),
+        channel.from([
+            [meta, file(params.input_image, checkIfExist:true), params.dataset],
+            ]
+        ),
         params.sigma
     )
-    ch_versions = ch_versions.mix(BLUR.out.versions)
+    // ch_versions = ch_versions.mix(BLUR.out.versions)
 
 	SEGMENT(BLUR.out.blurred)
     MORPHOMETRY(SEGMENT.out.segmented)
