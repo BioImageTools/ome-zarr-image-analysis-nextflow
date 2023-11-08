@@ -55,7 +55,7 @@ def segment(
         _ = writer.write_multiscale_labels(pyramid = layers, group = gr, name = segmentation_name, storage_options={'dimension_separator': '/'})
 
 def version():
-    return "0.0.1"
+    print("0.0.1")
 
 if __name__ == '__main__':
     cli = {

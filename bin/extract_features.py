@@ -56,6 +56,12 @@ def extract_features(
     # Save the output
     #writer.write(pyramid=inputs, group=inputs)
 
+def version():
+    print("0.0.1")
 
 if __name__ == '__main__':
-    fire.Fire(extract_features)
+    cli = {
+        "version": version,
+        "run": extract_features
+    }
+    fire.Fire(cli)
