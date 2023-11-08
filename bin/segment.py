@@ -7,6 +7,7 @@ from ome_zarr import writer, scale, reader
 from ome_zarr.io import parse_url
 import numpy as np
 from typing import Optional
+import fire
 
 def segment(omezarr_root: str,
             resolution: int = 0,
