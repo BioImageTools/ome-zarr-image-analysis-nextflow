@@ -18,19 +18,16 @@ def write_dict_to_csv(dictionary, filename):
 
 def extract_features(
         omezarr_root: str,
-        dataset: str, 
         segmentation_method: str="otsu",
-        # table_path: str="tables",
         resolution=0,
     ):
     ### Extract basic image features and append to the same OME-Zarr.
     # Read OME-Zarr label image and specify a resolution layer.
-    label_path = os.sep.join([omezarr_root, dataset, "labels", segmentation_method])
+    label_path = os.sep.join([omezarr_root, "labels", segmentation_method])
     label_reader = Reader(parse_url(label_path))
     label = list(label_reader())[0].data[resolution]
 
-    raw_path = os.sep.join([omezarr_root, dataset])
-    raw_reader = Reader(parse_url(raw_path))
+    raw_reader = Reader(parse_url(omezarr_root))
     raw = list(raw_reader())[0].data[resolution]
 
     # zarr_root = zarr.open_group(label_path, 'r')
@@ -48,12 +45,8 @@ def extract_features(
             np_dict[k] = v.get()
         except:
             np_dict[k] = v
-    # print(np_dict)
-    write_dict_to_csv(np_dict, f"{omezarr_root}/Features.csv")
-    # areas = [{"label-value": i, "area (pixels)": int(property.area)} for i, property in enumerate(properties)]
-    # print(properties)
-    # label_root.attrs["image-label"] = {"properties": areas}
     # Save the output
+    write_dict_to_csv(np_dict, f"{omezarr_root}/Features.csv")
     #writer.write(pyramid=inputs, group=inputs)
 
 def version():
