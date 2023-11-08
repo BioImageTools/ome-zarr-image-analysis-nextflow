@@ -13,30 +13,29 @@ process BLUR {
     container docker_img
 
     input:
-    tuple val(meta), path(omezarr_root), val(dataset)
+    tuple val(meta), path(omezarr_root), val(dataset), path(outdir)
     val(sigma) //for blurring, e.g. "2.5,2.5" or "3,3,5"
 
     output:
-    tuple val(meta), path(omezarr_root), val(dataset), emit: blurred
+    tuple val(meta), path(outdir), val(dataset), emit: blurred
     // path("blurring_versions.yml"), emit: versions
 
     script:
-    omezarr_out = meta['id'] + "_blurred.ome.zarr"
     def args = task.ext.args ?: ''
     def dataset = dataset ?: ''
     def verion_file_name = "blurring_versions.yml"
-    def processing_method = meta.processing_method
     """
     blur.py \
         -i $omezarr_root$dataset \
         -s $sigma \
-        -o $processing_method \
+        -o $outdir \
         $args # channel, timepoint, resolution 
 
-    cat <<-END_VERSIONS > ${omezarr_root}/${verion_file_name}
-    "${task.process} ":
-        blurring: \$(echo \$(blur.py --version 2>&1) | sed 's/^.*blur.py //; s/Using.*\$//' ))
-    
+    cat <<-END_VERSIONS > ${outdir}/${verion_file_name}
+    "${task.process}":
+        blurring: \$(echo \$(blur.py --version 2>&1 | sed 's/^.*blur.py //; s/Using.*\$//' ))
+        timestamp: \$(date)
+        modified_path: $outdir
     END_VERSIONS
     """
 }
@@ -58,18 +57,17 @@ process SEGMENT {
     def args = task.ext.args ?: ''
     def dataset = dataset ?: ''
     def verion_file_name = "segmentation_versions.yml"
-    def processing_method = meta.processing_method
-    def segmentation_name = meta.segmentation_name
     """
     segment.py run \
         $omezarr_root$dataset \
-        $processing_method \
-        --segmentation_name $segmentation_name \
+        --segmentation_name ${meta.segmentation_name} \
         $args #
 
     cat <<-END_VERSIONS > ${omezarr_root}/${verion_file_name}
     "${task.process}":
-        segment: \$(echo \$(segment.py version 2>&1) | sed 's/^.*segment.py //; s/Using.*\$//' ))
+        segment: \$(echo \$(segment.py version 2>&1 | sed 's/^.*segment.py //; s/Using.*\$//' ))
+        timestamp: \$(date)
+        modified_path: $omezarr_root/labels/$meta.segmentation_name
     END_VERSIONS
     """
 }
@@ -89,18 +87,19 @@ process MORPHOMETRY {
     // path(verion_file_name), emit: versions
 
     script:
-    def processing_method = meta.processing_method
-    def segmentation_name = meta.segmentation_name
     def verion_file_name = "feature_extraction_versions.yml"
+    def args = task.ext.args ?: ''
     """
     extract_features.py run \
         $omezarr_root$dataset \
-        $processing_method \
-        --segmentation_method $segmentation_name \
+        --segmentation_method ${meta.segmentation_name} \
+        $args
 
     cat <<-END_VERSIONS > ${omezarr_root}/${verion_file_name}
     "${task.process}":
-        features: \$(echo \$(extract_features.py version 2>&1) | sed 's/^.*extract_features.py //; s/Using.*\$//' ))
+        features: \$(echo \$(extract_features.py version 2>&1 | sed 's/^.*extract_features.py //; s/Using.*\$//' ))
+        timestamp: \$(date)
+        modified_path: $omezarr_root/Features.csv
     END_VERSIONS
     """
 }
@@ -113,10 +112,17 @@ workflow {
     meta.id = "demo"
     meta.processing_method = "gaussian_blur"
     meta.segmentation_name = "otsu1"
+    meta.processed_id = meta.id + "_" + meta.processing_method + ".ome.zarr"
+
+    def directory = new File(meta.processed_id)
+    if (!directory.exists()) {
+        directory.mkdirs()
+    }
 
 	BLUR(
-        channel.from([
-            [meta, file(params.input_image, checkIfExist:true), params.dataset],
+        channel.from(
+            [
+                [meta, file(params.input_image, checkIfExists:true), params.dataset, file(meta.processed_id, checkIfExists:true)],
             ]
         ),
         params.sigma

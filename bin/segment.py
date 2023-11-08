@@ -13,16 +13,13 @@ import os
 
 def segment(
         omezarr_root: str,
-        dataset: str,
         resolution: int = 0,
         channel: Optional[int] = 0,
         segmentation_name: str = 'otsu',
-        export_labels: bool = False,
     ):
     ### Apply otsu threshold to OME-Zarr and write output to a separate OME-Zarr directory.
     # Read OME-Zarr and specify a resolution layer.
-    target_raw  = os.sep.join([omezarr_root, dataset])
-    r = reader.Reader(parse_url(target_raw, mode="r"))
+    r = reader.Reader(parse_url(omezarr_root, mode="r"))
     inputs = list(r())
     data = inputs[0].data
     multimeta = inputs[0].metadata
@@ -44,15 +41,9 @@ def segment(
     new_shapes = [np.where(shape > 1, shape // 2 ** n, shape) for n in range(nres)]
     layers = [transform.resize(mask, tuple(shape), preserve_range = True).astype(np.uint8) for shape in new_shapes]
     # Save the output
-    if export_labels:
-        # Write labels as a separate OME-Zarr hierarchy
-        # assert outpath is not None, "If export_labels is True, outpath must be specified as a directory path."
-        gr = zarr.open_group(omezarr_root + "/" + dataset, mode = 'a')
-        _ = writer.write_multiscale(pyramid = layers, group = gr)
-    else:
-        # Write labels to the labels subdirectory of the input OME-Zarr hierarchy
-        gr = zarr.open_group(target_raw, mode='a')
-        _ = writer.write_multiscale_labels(pyramid = layers, group = gr, name = segmentation_name, storage_options={'dimension_separator': '/'})
+    # Write labels to the labels subdirectory of the input OME-Zarr hierarchy
+    gr = zarr.open_group(omezarr_root, mode='a')
+    _ = writer.write_multiscale_labels(pyramid = layers, group = gr, name = segmentation_name, storage_options={'dimension_separator': '/'})
 
 def version():
     print("0.0.1")

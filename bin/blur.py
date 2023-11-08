@@ -29,7 +29,9 @@ def main(args):
         sigma=sigmas
     )
 
-    gr = zarr.open_group(os.sep.join([args.input, args.output]), mode = 'w')
+    # has to be append mode, otherwise: OSError: Cannot call rmtree on a symbolic link
+    gr = zarr.open_group(args.output, mode = 'a')
+
     channel_index = [i for i, axis in enumerate(image_node.metadata['axes']) if axis['name'] == 'c'][0]
     combined = np.concatenate((layer, blurred_img), axis = channel_index)
 
@@ -59,6 +61,8 @@ if __name__ == "__main__":
                         help='Timepoint index')
     parser.add_argument('-r', '--resolution', type=int, default=0,
                         help='Resolution index')
+    parser.add_argument('-p', '--processing_method', type=str, default="", 
+                        help='processing method')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
     args = parser.parse_args()
 
