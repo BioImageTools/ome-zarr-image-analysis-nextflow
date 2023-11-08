@@ -1,6 +1,10 @@
 # dependencies
 # mamba create -n ngff-zarr python=3.9
 # pip install 'ngff-zarr'
+# pip install 'dask-image' 
+
+# issues
+# https://github.com/thewtex/ngff-zarr/issues/53
 
 import ngff_zarr
 
@@ -26,9 +30,8 @@ print("same pixel after adding 2:", numpy_array[0, 0, 0, 1, 1])
 # save one resolution
 output_image = ngff_zarr.to_ngff_image(numpy_array, image.dims, image.scale, image.translation, "processed", image.axes_units )
 
-# Below line
 # Error: ModuleNotFoundError: No module named 'dask_image'
-# Fix: pip install dask-image
+# https://github.com/thewtex/ngff-zarr/issues/53
 output_multiscales = ngff_zarr.to_multiscales(output_image, 1)
 ngff_zarr.to_ngff_zarr("/Users/tischer/Desktop/output_ome_zarr", output_multiscales)
 
