@@ -3,9 +3,11 @@ params.input_image = "data/xy_8bit__nuclei_PLK1_control.ome.zarr"
 params.sigma = "1,1,1,2.5,2.5"
 params.dataset = ''
 
+conda_env_spec = "conda-forge::scikit-image=0.22.0 conda-forge::ome-zarr=0.8.0 conda-forge::fire=0.5.0"
+
 process BLUR {
     debug true
-	conda "conda-forge::scikit-image=0.22.0 conda-forge::ome-zarr=0.8.0"
+	conda conda_env_spec
 
     publishDir "output", mode: 'copy'
 	
@@ -14,7 +16,7 @@ process BLUR {
     val(sigma) //for blurring, e.g. "2.5,2.5" or "3,3,5"
 
     output:
-    tuple val(meta), path(omezarr_out), emit: blurred
+    tuple val(meta), path(omezarr_out), val(dataset), emit: blurred
     path("blurring_versions.yml"), emit: versions
 
     script:
@@ -38,39 +40,41 @@ process BLUR {
 
 process SEGMENT {
     debug true
-	conda "conda-forge::scikit-image=0.22.0 conda-forge::ome-zarr=0.8.0"
+	conda conda_env_spec
 
     input:
     tuple val(meta), path(omezarr_root), val(dataset)
 
     output:
     tuple val(meta), path(omezarr_root), val(dataset)
-    path(verion_file_name), emit: versions
+    // path(verion_file_name), emit: versions
 
     script:
     def args = task.ext.args ?: ''
     def dataset = dataset ?: ''
     def verion_file_name = "segmentation_versions.yml"
     """
-    segment.py \
-        -i $omezarr_root$dataset \
+    segment.py run \
+        $omezarr_root$dataset \
         $args #
 
-    cat <<-END_VERSIONS > ${verion_file_name}
-    "${task.process}":
-        segment: \$(echo \$(segment.py --version 2>&1) | sed 's/^.*segment.py //; s/Using.*\$//' ))
-    END_VERSIONS
+    #cat <<-END_VERSIONS > ${verion_file_name}
+    #"${task.process}":
+    #    segment: \$(echo \$(segment.py version 2>&1) | sed 's/^.*segment.py //; s/Using.*\$//' ))
+    #END_VERSIONS
     """
 }
 
 
 process MORPHOMETRY {
-	conda "scikit-image=0.22.0 ome-zarr=0.8.0"
+	conda conda_env_spec
 
     input:
     tuple val(meta), path(omezarr_root), val(dataset)
 
     output:
+    tuple val(meta), path(table)
+    path(verion_file_name), emit: versions
 
     script:
     """
@@ -82,7 +86,7 @@ workflow {
 
     ch_versions = Channel.empty()
     meta = [:]
-    meta.id = "input"
+    meta.id = "demo"
 
 	BLUR(
         channel.from([[meta, file(params.input_image, checkIfExist:true), params.dataset]]),
@@ -90,6 +94,6 @@ workflow {
     )
     ch_versions = ch_versions.mix(BLUR.out.versions)
 
-	SEGMENT(BLUR.out)
-    MORPHOMETRY(SEGMENT.out)
+	SEGMENT(BLUR.out.blurred)
+    // MORPHOMETRY(SEGMENT.out)
 }
