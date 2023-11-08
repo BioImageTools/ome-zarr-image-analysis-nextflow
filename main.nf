@@ -12,14 +12,12 @@ process BLUR {
 	conda conda_env_spec
     container docker_img
 
-    publishDir "output", mode: 'copy'
-	
     input:
     tuple val(meta), path(omezarr_root), val(dataset)
     val(sigma) //for blurring, e.g. "2.5,2.5" or "3,3,5"
 
     output:
-    tuple val(meta), path(omezarr_out), val(dataset), emit: blurred
+    tuple val(meta), path(omezarr_root), val(dataset), emit: blurred
     path("blurring_versions.yml"), emit: versions
 
     script:
@@ -27,11 +25,12 @@ process BLUR {
     def args = task.ext.args ?: ''
     def dataset = dataset ?: ''
     def verion_file_name = "blurring_versions.yml"
+    def processing_method = meta.processing_method
     """
     blur.py \
         -i $omezarr_root$dataset \
         -s $sigma \
-        -o $omezarr_out\
+        -o $processing_method \
         $args # channel, timepoint, resolution 
 
     cat <<-END_VERSIONS > ${verion_file_name}
@@ -58,9 +57,11 @@ process SEGMENT {
     def args = task.ext.args ?: ''
     def dataset = dataset ?: ''
     def verion_file_name = "segmentation_versions.yml"
+    def processing_method = meta.processing_method
     """
     segment.py run \
         $omezarr_root$dataset \
+        $processing_method \
         $args #
 
     #cat <<-END_VERSIONS > ${verion_file_name}
@@ -94,6 +95,7 @@ workflow {
     ch_versions = Channel.empty()
     meta = [:]
     meta.id = "demo"
+    meta.processing_method = "gaussian_blur"
 
 	BLUR(
         channel.from([[meta, file(params.input_image, checkIfExist:true), params.dataset]]),
