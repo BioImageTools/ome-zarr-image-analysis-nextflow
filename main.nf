@@ -2,6 +2,7 @@
 params.input_image = "data/xy_8bit__nuclei_PLK1_control.ome.zarr"
 params.sigma = "1,1,1,2.5,2.5"
 params.dataset = ''
+params.outdir = "./output"
 
 conda_env_spec = "conda-forge::scikit-image=0.22.0 conda-forge::ome-zarr=0.8.0 conda-forge::fire=0.5.0"
 docker_img = "bioinfotongli/ome-zarr-nextflow-minimum:latest"
@@ -114,7 +115,8 @@ workflow {
     meta.segmentation_name = "otsu1"
     meta.processed_id = meta.id + "_" + meta.processing_method + ".ome.zarr"
 
-    def directory = new File(meta.processed_id)
+    def in_dir = params.outdir + "/" + meta.processed_id
+    def directory = new File(in_dir)
     if (!directory.exists()) {
         directory.mkdirs()
     }
@@ -122,7 +124,7 @@ workflow {
 	BLUR(
         channel.from(
             [
-                [meta, file(params.input_image, checkIfExists:true), params.dataset, file(meta.processed_id, checkIfExists:true)],
+                [meta, file(params.input_image, checkIfExists:true), params.dataset, file(in_dir)],
             ]
         ),
         params.sigma
