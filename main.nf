@@ -50,7 +50,7 @@ process SEGMENT {
     tuple val(meta), path(omezarr_root), val(dataset)
 
     output:
-    tuple val(meta), path(omezarr_root), val(dataset)
+    tuple val(meta), path(omezarr_root), val(dataset), emit: segmented
     // path(verion_file_name), emit: versions
 
     script:
@@ -58,10 +58,12 @@ process SEGMENT {
     def dataset = dataset ?: ''
     def verion_file_name = "segmentation_versions.yml"
     def processing_method = meta.processing_method
+    def segmentation_name = meta.segmentation_name
     """
     segment.py run \
         $omezarr_root$dataset \
         $processing_method \
+        --segmentation_name $segmentation_name \
         $args #
 
     #cat <<-END_VERSIONS > ${verion_file_name}
@@ -73,6 +75,7 @@ process SEGMENT {
 
 
 process MORPHOMETRY {
+    debug true
 
 	conda conda_env_spec
     container docker_img
@@ -81,11 +84,17 @@ process MORPHOMETRY {
     tuple val(meta), path(omezarr_root), val(dataset)
 
     output:
-    tuple val(meta), path(table)
-    path(verion_file_name), emit: versions
+    tuple val(meta), path(omezarr_root), val(dataset)
+    // path(verion_file_name), emit: versions
 
     script:
+    def processing_method = meta.processing_method
+    def segmentation_name = meta.segmentation_name
     """
+    extract_features.py \
+        $omezarr_root$dataset \
+        $processing_method \
+        --segmentation_method $segmentation_name \
     """
 }
 
@@ -96,6 +105,7 @@ workflow {
     meta = [:]
     meta.id = "demo"
     meta.processing_method = "gaussian_blur"
+    meta.segmentation_name = "otsu1"
 
 	BLUR(
         channel.from([[meta, file(params.input_image, checkIfExist:true), params.dataset]]),
@@ -104,5 +114,5 @@ workflow {
     ch_versions = ch_versions.mix(BLUR.out.versions)
 
 	SEGMENT(BLUR.out.blurred)
-    // MORPHOMETRY(SEGMENT.out)
+    MORPHOMETRY(SEGMENT.out.segmented)
 }
