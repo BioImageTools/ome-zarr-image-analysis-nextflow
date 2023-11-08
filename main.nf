@@ -4,10 +4,13 @@ params.sigma = "1,1,1,2.5,2.5"
 params.dataset = ''
 
 conda_env_spec = "conda-forge::scikit-image=0.22.0 conda-forge::ome-zarr=0.8.0 conda-forge::fire=0.5.0"
+docker_img = "bioinfotongli/ome-zarr-nextflow-minimum:latest"
 
 process BLUR {
     debug true
+
 	conda conda_env_spec
+    container docker_img
 
     publishDir "output", mode: 'copy'
 	
@@ -40,7 +43,9 @@ process BLUR {
 
 process SEGMENT {
     debug true
+
 	conda conda_env_spec
+    container docker_img
 
     input:
     tuple val(meta), path(omezarr_root), val(dataset)
@@ -67,7 +72,9 @@ process SEGMENT {
 
 
 process MORPHOMETRY {
+
 	conda conda_env_spec
+    container docker_img
 
     input:
     tuple val(meta), path(omezarr_root), val(dataset)
