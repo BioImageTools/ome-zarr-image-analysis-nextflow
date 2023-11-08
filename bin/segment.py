@@ -1,12 +1,11 @@
 #! /usr/bin/env python3
 
-from ome_zarr.io import parse_url
-from ome_zarr.reader import Reader
-from ome_zarr.scale import Scaler
-from skimage import filters, morphology
+from pathlib import Path
+from skimage import filters, transform, morphology
 import zarr
-from ome_zarr import writer
-import fire
+from ome_zarr import writer, scale, reader
+from ome_zarr.io import parse_url
+import numpy as np
 from typing import Optional
 
 def segment(omezarr_root: str,
