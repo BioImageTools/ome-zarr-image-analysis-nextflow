@@ -4,23 +4,24 @@ Simple example created by a group at the "Next generation bioimage analysis work
 
 ## Aims
 
-* Explore what nf-core gives us for specifying inputs and outputs
-* Explore storing versioning file as in nf-core
-* Create a github-repo for the below code
-* Create a minimal workflow in Nextflow that uses OME-Zarr
-  * Process 1: Segment image
-  * Process 2: Measure segment shape features
-* Should the input be only one scale? Or multiple?
-* How to handle the multi-scales for the outputs?
-* What exactly is the input for an image / labels?
-* Where to store the label mask? Inside the input.zarr or create a new one?
-* Explore how to link OME-Zarr data rather than copy it
-* Where/how to store the table?
-* A more tightly connected image visualisation tool?
-* Probably good to look at Fractal tasks in this context
+- [x] Explore what nf-core gives us for specifying inputs and outputs
+- [x] Explore storing versioning file as in nf-core. Update: putting all versioning logging file at the root for now.
+- [x] Create a github-repo for the below code
+- [x] Create a minimal workflow in Nextflow that uses OME-Zarr
+  - [x] Process 1: Create new gaussian blurred ome-zarr image
+  - [x] Process 2: Segment image
+  - [x] Process 3: Measure segment shape features
+- [ ] Should the input be only one scale? Or multiple?
+- [ ] How to handle the multi-scales for the outputs?
+- [x] Root ome-zarr + subfolder strings as input. Numpy/dask object as Image/labels data.
+- [x] label image stored within the same ome-zarr file as an image
+- [x] 'Hacked' nextflow IO to allow for reading/writing valid OME-Zarr files
+- [ ] Where/how to store the table?
+- [ ] A more tightly connected image visualisation tool?
+- [ ] Integration Fractal tasks into Nextflow 
 * Bonus
-  * Process only a part of an image
-  * Use a Fractal task as one of the Nextflow processes
+  - [ ] Process only a part of an image
+  - [ ] Use a Fractal task as one of the Nextflow processes
  
 ## Observations
 
