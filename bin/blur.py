@@ -53,6 +53,7 @@ if __name__ == "__main__":
                         help='Timepoint index')
     parser.add_argument('-r', '--resolution', type=int, default=0, 
                         help='Resolution index')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
     args = parser.parse_args()
 
     main(args)
