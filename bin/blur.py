@@ -3,6 +3,7 @@
 import argparse
 from ome_zarr.io import parse_url
 from ome_zarr.reader import Reader
+from ome_zarr.scale import Scaler
 from ome_zarr import writer
 from skimage.filters import gaussian
 import zarr
@@ -12,30 +13,34 @@ import os
 
 def main(args):
     # read the image data
-    reader = Reader(parse_url(args.input, mode="r"))
+    r = Reader(parse_url(args.input, mode="r"))
     # nodes may include images, labels etc
-    nodes = list(reader())
+    nodes = list(r())
 
     # first node will be the image pixel data
     image_node = nodes[0]
 
     sigmas = [float(s) for s in args.sigma.split(",")]
 
-    dask_img = image_node.data
-    chosen_channel = dask_img[args.resolution]
+    data = image_node.data
+    layer = data[args.resolution]
     blurred_img = gaussian(
-        chosen_channel,
+        layer,
         sigma=sigmas
     )
 
     gr = zarr.open_group(os.sep.join([args.input, args.output]), mode = 'w')
     channel_index = [i for i, axis in enumerate(image_node.metadata['axes']) if axis['name'] == 'c'][0]
-    combined = np.concatenate((chosen_channel, blurred_img), axis = channel_index)
+    combined = np.concatenate((layer, blurred_img), axis = channel_index)
+
+    scaler = Scaler(max_layer = len(data) - 1)
     _ = writer.write_image(
-        combined, group = gr,
-        axes=image_node.metadata['axes'],
-        storage_options={'dimension_separator': '/'}
-    )
+                            combined,
+                            group = gr,
+                            scaler = scaler,
+                            axes = image_node.metadata['axes'],
+                            storage_options = {'dimension_separator': '/'},
+                           )
 
 
 if __name__ == "__main__":
@@ -43,16 +48,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Blur an OME-Zarr image')
 
     parser.add_argument('-i', '--input', type=str, required=True, \
-                        help='Path to the OME-Zarr data set containing the input image')
+                        help='Path to the OME-Zarr dataset containing the input image')
     parser.add_argument('-o', '--output', type=str, required=True, \
-                        help='Path to the OME-Zarr data set where the output image will be written')
+                        help='Path to the OME-Zarr dataset (relative to root) where the output image will be written')
     parser.add_argument('-s', '--sigma', type=str, required=True, \
         help='Sigma for blur kernel, comma delimited')
-    parser.add_argument('-c', '--channel', type=int, default=0, 
+    parser.add_argument('-c', '--channel', type=int, default=0,
                         help='Channel index')
-    parser.add_argument('-t', '--timepoint', type=int, default=0, 
+    parser.add_argument('-t', '--timepoint', type=int, default=0,
                         help='Timepoint index')
-    parser.add_argument('-r', '--resolution', type=int, default=0, 
+    parser.add_argument('-r', '--resolution', type=int, default=0,
                         help='Resolution index')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
     args = parser.parse_args()
