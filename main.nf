@@ -13,11 +13,11 @@ process BLUR {
     container docker_img
 
     input:
-    tuple val(meta), path(omezarr_root), path(outdir)
+    tuple val(meta), path(omezarr_root), path(omezarr_out)
     val(sigma) //for blurring, e.g. "2.5,2.5" or "3,3,5"
 
     output:
-    tuple val(meta), path(outdir), emit: blurred
+    tuple val(meta), path(omezarr_out), emit: blurred
     // path("blurring_versions.yml"), emit: versions
 
     script:
@@ -27,10 +27,10 @@ process BLUR {
     blur.py \
         -i $omezarr_root \
         -s $sigma \
-        -o $outdir \
+        -o $omezarr_out \
         $args # channel, timepoint, resolution 
 
-    cat <<-END_VERSIONS > ${outdir}/${verion_file_name}
+    cat <<-END_VERSIONS > ${omezarr_out}/${verion_file_name}
     "${task.process}":
         blurring: \$(echo \$(blur.py --version 2>&1 | sed 's/^.*blur.py //; s/Using.*\$//' ))
         timestamp: \$(date)
