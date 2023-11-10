@@ -34,7 +34,7 @@ process BLUR {
     "${task.process}":
         blurring: \$(echo \$(blur.py --version 2>&1 | sed 's/^.*blur.py //; s/Using.*\$//' ))
         timestamp: \$(date)
-        modified_path: $outdir
+        modified_path: $omezarr_out
     END_VERSIONS
     """
 }
@@ -106,28 +106,18 @@ process MORPHOMETRY {
 workflow {
 
     // ch_versions = Channel.empty()
-    meta = [:]
-    meta.id = "demo"
-    meta.processing_method = "gaussian_blur"
-    meta.segmentation_name = "otsu1"
-    meta.processed_id = meta.id + "_" + meta.processing_method + ".ome.zarr"
-
-    def in_dir = params.outdir + "/" + meta.processed_id
-    def directory = new File(in_dir)
-    if (!directory.exists()) {
-        directory.mkdirs()
-    }
-
-	BLUR(
-        channel.from(
-            [
-                [meta, file(params.input_image, checkIfExists:true), file(in_dir)],
-            ]
-        ),
-        params.sigma
-    )
     // ch_versions = ch_versions.mix(BLUR.out.versions)
 
+    datasets = channel.from(params.images)
+        .multiMap{dataset ->
+            new_output = file(params.outdir + "/" +dataset[0].processed_id)
+            to_blur: [dataset[0], file(dataset[1]), new_output] //channel to be processed
+            to_create_output: new_output //channel of output dirs to be created
+        }
+
+    datasets.to_create_output.map{ it -> it.mkdirs()} // create output dirs for all datasets
+
+	BLUR(datasets.to_blur, params.sigma)
 	SEGMENT(BLUR.out.blurred)
     MORPHOMETRY(SEGMENT.out.segmented)
 }
