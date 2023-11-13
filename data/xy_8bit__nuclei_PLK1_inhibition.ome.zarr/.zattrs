@@ -1,0 +1,69 @@
+{
+  "multiscales" : [ {
+    "metadata" : {
+      "method" : "loci.common.image.SimpleImageScaler",
+      "version" : "Bio-Formats 6.13.0"
+    },
+    "axes" : [ {
+      "unit" : "second",
+      "name" : "t",
+      "type" : "time"
+    }, {
+      "name" : "c",
+      "type" : "channel"
+    }, {
+      "name" : "z",
+      "type" : "space"
+    }, {
+      "unit" : "micrometer",
+      "name" : "y",
+      "type" : "space"
+    }, {
+      "unit" : "micrometer",
+      "name" : "x",
+      "type" : "space"
+    } ],
+    "name" : "xy_8bit__nuclei_PLK1_inhibition.tif",
+    "datasets" : [ {
+      "path" : "0",
+      "coordinateTransformations" : [ {
+        "scale" : [ 299.35504150390625, 1.0, 1.0, 0.166053183181403, 0.166053183181403 ],
+        "type" : "scale"
+      } ]
+    }, {
+      "path" : "1",
+      "coordinateTransformations" : [ {
+        "scale" : [ 299.35504150390625, 1.0, 1.0, 0.332106366362806, 0.332106366362806 ],
+        "type" : "scale"
+      } ]
+    }, {
+      "path" : "2",
+      "coordinateTransformations" : [ {
+        "scale" : [ 299.35504150390625, 1.0, 1.0, 0.664212732725612, 0.664212732725612 ],
+        "type" : "scale"
+      } ]
+    } ],
+    "version" : "0.4"
+  } ],
+  "omero" : {
+    "channels" : [ {
+      "color" : "808080",
+      "coefficient" : 1,
+      "active" : true,
+      "label" : "Channel 0",
+      "window" : {
+        "min" : 0.0,
+        "max" : 160.0,
+        "start" : 0.0,
+        "end" : 160.0
+      },
+      "family" : "linear",
+      "inverted" : false
+    } ],
+    "rdefs" : {
+      "defaultT" : 0,
+      "model" : "greyscale",
+      "defaultZ" : 0
+    }
+  }
+}
