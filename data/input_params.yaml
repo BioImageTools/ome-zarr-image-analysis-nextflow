@@ -1,0 +1,14 @@
+images:
+    -
+        - id: control 
+          processing_method: gaussian_blur_1
+          segmentation_name: otsu1
+          processed_id: control_gaussian_blur_1.ome.zarr
+        - "data/xy_8bit__nuclei_PLK1_control.ome.zarr"
+    -
+        - id: inhibited 
+          processing_method: gaussian_blur_2
+          segmentation_name: otsu2
+          processed_id: inhibited_gaussian_blur_2.ome.zarr
+        - "data/xy_8bit__nuclei_PLK1_inhibition.ome.zarr"
+ourdir: "output/"
