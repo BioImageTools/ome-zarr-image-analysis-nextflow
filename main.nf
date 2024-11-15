@@ -1,6 +1,6 @@
 
 params.input_image =[
-    [["id": "ome-zarr-1"], "/lustre/scratch126/cellgen/cellgeni/tl10/ome-zarr-image-analysis-nextflow/data/xy_8bit__nuclei_PLK1_control.ome.zarr"],
+    [["id": "ome-zarr-1"], "./data/xy_8bit__nuclei_PLK1_control.ome.zarr"],
 ]
 params.sigma = "1,1,1,2.5,2.5"
 params.outdir = "./output"
