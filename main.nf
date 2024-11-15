@@ -6,7 +6,7 @@ params.sigma = "1,1,1,2.5,2.5"
 params.outdir = "./output"
 
 conda_env_spec = "conda-forge::scikit-image=0.22.0 conda-forge::ome-zarr=0.8.0 conda-forge::fire=0.5.0"
-docker_img = "bioinfotongli/ome-zarr-nextflow-minimum:latest"
+docker_img = "quay.io/bioinfotongli/ome-zarr-nextflow-minimum:latest"
 verbose = true
 
 process BLUR {
