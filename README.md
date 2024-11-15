@@ -2,6 +2,22 @@
 
 Simple example created by a group at the "Next generation bioimage analysis workflows hackathon".
 
+
+## Usage
+
+1. Git pull this repository
+2. cd into the repository folder
+3. Modify the `data/input_params.yaml` file to point to the _absolute_ input image path 
+4. Run the following command:
+If you have a conda environment with nextflow installed, you can run the following command:
+```
+nextflow run . -params-file data/input_params.yaml -profile docker
+```
+or run with docker:
+```
+nextflow run . -params-file data/input_params.yaml -profile docker
+```
+
 ## Aims
 
 - [x] Explore what nf-core gives us for specifying inputs and outputs
