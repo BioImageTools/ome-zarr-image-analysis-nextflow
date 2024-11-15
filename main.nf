@@ -1,5 +1,7 @@
 
-params.input_image = "data/xy_8bit__nuclei_PLK1_control.ome.zarr"
+params.input_image =[
+    [["id": "ome-zarr-1"], "/lustre/scratch126/cellgen/cellgeni/tl10/ome-zarr-image-analysis-nextflow/data/xy_8bit__nuclei_PLK1_control.ome.zarr"],
+]
 params.sigma = "1,1,1,2.5,2.5"
 params.outdir = "./output"
 
@@ -12,29 +14,31 @@ process BLUR {
 	conda conda_env_spec
     container docker_img
 
+    publishDir params.outdir
+
     input:
-    tuple val(meta), path(omezarr_root), path(omezarr_out)
+    tuple val(meta), path(omezarr_root)
     val(sigma) //for blurring, e.g. "2.5,2.5" or "3,3,5"
 
     output:
-    tuple val(meta), path(omezarr_out), emit: blurred
-    // path("blurring_versions.yml"), emit: versions
+    tuple val(meta), path("${meta.id}"), emit: blurred
+    path("${meta.id}/${version_file_name}"), emit: versions
 
     script:
     def args = task.ext.args ?: ''
-    def verion_file_name = "blurring_versions.yml"
+    version_file_name = "blurring_versions.yml"
     """
     blur.py \
         -i $omezarr_root \
         -s $sigma \
-        -o $omezarr_out \
+        -o $meta.id \
         $args # channel, timepoint, resolution 
 
-    cat <<-END_VERSIONS > ${omezarr_out}/${verion_file_name}
+    cat <<-END_VERSIONS > ${meta.id}/${version_file_name}
     "${task.process}":
         blurring: \$(echo \$(blur.py --version 2>&1 | sed 's/^.*blur.py //; s/Using.*\$//' ))
         timestamp: \$(date)
-        modified_path: $omezarr_out
+        modified_path: $meta.id
     END_VERSIONS
     """
 }
@@ -45,23 +49,25 @@ process SEGMENT {
 	conda conda_env_spec
     container docker_img
 
+    publishDir params.outdir
+
     input:
     tuple val(meta), path(omezarr_root)
 
     output:
     tuple val(meta), path(omezarr_root), emit: segmented
-    // path(verion_file_name), emit: versions
+    path("${omezarr_root}/${version_file_name}"), emit: versions
 
     script:
     def args = task.ext.args ?: ''
-    def verion_file_name = "segmentation_versions.yml"
+    version_file_name = "segmentation_versions.yml"
     """
     segment.py run \
         $omezarr_root \
         --segmentation_name ${meta.segmentation_name} \
         $args #
 
-    cat <<-END_VERSIONS > ${omezarr_root}/${verion_file_name}
+    cat <<-END_VERSIONS > ${omezarr_root}/${version_file_name}
     "${task.process}":
         segment: \$(echo \$(segment.py version 2>&1 | sed 's/^.*segment.py //; s/Using.*\$//' ))
         timestamp: \$(date)
@@ -77,15 +83,17 @@ process MORPHOMETRY {
 	conda conda_env_spec
     container docker_img
 
+    publishDir params.outdir
+
     input:
     tuple val(meta), path(omezarr_root)
 
     output:
     tuple val(meta), path(omezarr_root)
-    // path(verion_file_name), emit: versions
+    path("${omezarr_root}/${version_file_name}"), emit: versions
 
     script:
-    def verion_file_name = "feature_extraction_versions.yml"
+    version_file_name = "feature_extraction_versions.yml"
     def args = task.ext.args ?: ''
     """
     extract_features.py run \
@@ -93,7 +101,7 @@ process MORPHOMETRY {
         --segmentation_method ${meta.segmentation_name} \
         $args
 
-    cat <<-END_VERSIONS > ${omezarr_root}/${verion_file_name}
+    cat <<-END_VERSIONS > ${omezarr_root}/${version_file_name}
     "${task.process}":
         features: \$(echo \$(extract_features.py version 2>&1 | sed 's/^.*extract_features.py //; s/Using.*\$//' ))
         timestamp: \$(date)
@@ -108,16 +116,7 @@ workflow {
     // ch_versions = Channel.empty()
     // ch_versions = ch_versions.mix(BLUR.out.versions)
 
-    datasets = channel.from(params.images)
-        .multiMap{dataset ->
-            new_output = file(params.outdir + "/" +dataset[0].processed_id)
-            to_blur: [dataset[0], file(dataset[1]), new_output] //channel to be processed
-            to_create_output: new_output //channel of output dirs to be created
-        }
-
-    datasets.to_create_output.map{ it -> it.mkdirs()} // create output dirs for all datasets
-
-	BLUR(datasets.to_blur, params.sigma)
+	BLUR(channel.from(params.images), params.sigma)
 	SEGMENT(BLUR.out.blurred)
     MORPHOMETRY(SEGMENT.out.segmented)
 }
