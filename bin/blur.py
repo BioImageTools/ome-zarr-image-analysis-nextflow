@@ -8,7 +8,6 @@ from ome_zarr import writer
 from skimage.filters import gaussian
 import zarr
 import numpy as np
-import os
 
 
 def main(args):
