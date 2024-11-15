@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 
-#from ome_zarr import writer
 from ome_zarr.io import parse_url
 from ome_zarr.reader import Reader
 from skimage.measure import regionprops_table
