@@ -12,7 +12,7 @@ verbose = true
 process BLUR {
     debug verbose
 
-	conda conda_env_spec
+    conda conda_env_spec
     container docker_img
 
     publishDir params.outdir
@@ -47,7 +47,7 @@ process BLUR {
 process SEGMENT {
     debug verbose 
 
-	conda conda_env_spec
+    conda conda_env_spec
     container docker_img
 
     publishDir params.outdir
@@ -81,7 +81,7 @@ process SEGMENT {
 process MORPHOMETRY {
     debug verbose
 
-	conda conda_env_spec
+    conda conda_env_spec
     container docker_img
 
     publishDir params.outdir
@@ -116,7 +116,7 @@ workflow {
     // ch_versions = Channel.empty()
     // ch_versions = ch_versions.mix(BLUR.out.versions)
 
-	BLUR(channel.from(params.images), params.sigma)
-	SEGMENT(BLUR.out.blurred)
+    BLUR(channel.from(params.images), params.sigma)
+    SEGMENT(BLUR.out.blurred)
     MORPHOMETRY(SEGMENT.out.segmented)
 }
