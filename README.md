@@ -11,11 +11,11 @@ Simple example created by a group at the "Next generation bioimage analysis work
 4. Run the following command:
 If you have a conda environment with nextflow installed, you can run the following command:
 ```
-nextflow run . -params-file data/input_params.yaml -profile docker
+nextflow run . -params-file data/input_params_local.yaml -profile docker
 ```
 or run with docker:
 ```
-nextflow run . -params-file data/input_params.yaml -profile docker
+nextflow run . -params-file data/input_params_local.yaml -profile docker
 ```
 
 ## Aims
