@@ -6,14 +6,13 @@ params.sigma = "1,1,1,2.5,2.5"
 params.outdir = "./output"
 
 conda_env_spec = "conda-forge::scikit-image=0.22.0 conda-forge::ome-zarr=0.8.0 conda-forge::fire=0.5.0"
-docker_img = "quay.io/bioinfotongli/ome-zarr-nextflow-minimum:latest"
 verbose = true
 
 process BLUR {
     debug verbose
 
     conda conda_env_spec
-    container docker_img
+    container "quay.io/bioinfotongli/ome-zarr-nextflow-minimum:latest"
 
     publishDir params.outdir
 
@@ -48,7 +47,7 @@ process SEGMENT {
     debug verbose 
 
     conda conda_env_spec
-    container docker_img
+    container "quay.io/bioinfotongli/ome-zarr-nextflow-minimum:latest"
 
     publishDir params.outdir
 
@@ -82,7 +81,7 @@ process MORPHOMETRY {
     debug verbose
 
     conda conda_env_spec
-    container docker_img
+    container "quay.io/bioinfotongli/ome-zarr-nextflow-minimum:latest"
 
     publishDir params.outdir
 
@@ -113,10 +112,7 @@ process MORPHOMETRY {
 
 
 workflow {
-    // ch_versions = Channel.empty()
-    // ch_versions = ch_versions.mix(BLUR.out.versions)
-
-    BLUR(channel.from(params.images), params.sigma)
+    BLUR(channel.from(params.input_image), params.sigma)
     SEGMENT(BLUR.out.blurred)
     MORPHOMETRY(SEGMENT.out.segmented)
 }
